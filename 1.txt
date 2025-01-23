@@ -1,0 +1,92 @@
+import sqlite3
+
+def create_database():
+    # Підключення до бази даних (створить файл, якщо його не існує)
+    conn = sqlite3.connect("student_records.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS students (
+        student_id INTEGER PRIMARY KEY,
+        first_name VARCHAR(50),
+        last_name VARCHAR(50),
+        birth_date DATE,
+        major VARCHAR(100)
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS courses (
+        course_id INTEGER PRIMARY KEY,
+        course_name VARCHAR(100),
+        credits INTEGER
+    );
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS enrollments (
+        enrollment_id INTEGER PRIMARY KEY,
+        student_id INTEGER,
+        course_id INTEGER,
+        enrollment_date DATE,
+        FOREIGN KEY (student_id) REFERENCES students (student_id),
+        FOREIGN KEY (course_id) REFERENCES courses (course_id)
+    );
+    """)
+
+    students_data = [
+        (1, "Корч", "Женя", "2000-01-15", "Computer Science"),
+        (2, "Антон", "Кожановський", "1999-05-23", "Mathematics"),
+        (3, "Калаш", "Галя", "2001-03-10", "Physics"),
+        (4, "Гіга", "Барик", "1998-12-02", "Biology"),
+        (5, "Юра", "Приставський", "2000-07-19", "Chemistry")
+    ]
+    cursor.executemany("INSERT INTO students (student_id, first_name, last_name, birth_date, major) VALUES (?, ?, ?, ?, ?);", students_data)
+
+    courses_data = [
+        (1, "Programming", 4),
+        (2, "Food Technologies", 3),
+        (3, "Economy", 4)
+    ]
+    cursor.executemany("INSERT INTO courses (course_id, course_name, credits) VALUES (?, ?, ?);", courses_data)
+
+    conn.commit()
+    conn.close()
+    print("Database, tables, and initial data created successfully.")
+
+def query_students_by_major():
+    conn = sqlite3.connect("student_records.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM students WHERE major = 'Computer Science';")
+    result = cursor.fetchall()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cs_students AS 
+    SELECT * FROM students WHERE major = 'Computer Science';
+    """)
+
+    conn.commit()
+    conn.close()
+    print("Query executed: students specializing in 'Computer Science' saved in 'cs_students'.")
+
+def query_courses_with_credits():
+    conn = sqlite3.connect("student_records.db")
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM courses WHERE credits > 3;")
+    result = cursor.fetchall()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS high_credit_courses AS 
+    SELECT * FROM courses WHERE credits > 3;
+    """)
+
+    conn.commit()
+    conn.close()
+    print("Query executed: courses with credits > 3 saved in 'high_credit_courses'.")
+
+if __name__ == "__main__":
+    create_database()
+    query_students_by_major()
+    query_courses_with_credits()
