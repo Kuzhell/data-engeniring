@@ -1,0 +1,85 @@
+DROP TABLE IF EXISTS Enrollments;
+DROP TABLE IF EXISTS Courses;
+DROP TABLE IF EXISTS Students;
+DROP TABLE IF EXISTS Departments;
+
+CREATE TABLE Students (
+    student_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    birth_date DATE
+);
+
+CREATE TABLE Courses (
+    course_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    course_name TEXT NOT NULL,
+    credits INTEGER NOT NULL
+);
+
+CREATE TABLE Enrollments (
+    enrollment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER,
+    course_id INTEGER,
+    enrollment_date DATE,
+    FOREIGN KEY (student_id) REFERENCES Students(student_id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id) ON DELETE CASCADE
+);
+
+CREATE TABLE Departments (
+    department_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    department_name TEXT NOT NULL,
+    faculty TEXT NOT NULL
+);
+
+INSERT INTO Students (name, email, birth_date) VALUES 
+('johndoe', 'johndoe2025@gmail.com', '2002-05-15'),
+('barik', 'barik@gmail.com', '1999-08-22'),
+('korch', 'korch@gmail.com', '2001-12-10');
+
+INSERT INTO Courses (course_name, credits) VALUES 
+('Math', 2),
+('Computer Science', 3),
+('Physics', 4);
+
+UPDATE Students SET email = 'john.doe2025@gmail.com' WHERE student_id = 1;
+
+DELETE FROM Students WHERE student_id = 3;
+
+SELECT * FROM Students;
+
+SELECT * FROM Students WHERE birth_date > '2000-01-01';
+
+SELECT * FROM Courses ORDER BY credits ASC;
+
+SELECT COUNT(*) AS student_count FROM Students;
+
+SELECT Students.name, Courses.course_name
+FROM Students
+JOIN Enrollments ON Students.student_id = Enrollments.student_id
+JOIN Courses ON Enrollments.course_id = Courses.course_id;
+
+SELECT Students.name
+FROM Students
+JOIN Enrollments ON Students.student_id = Enrollments.student_id
+WHERE Enrollments.course_id = 2;
+
+SELECT COUNT(*) AS enrollments_count FROM Enrollments;
+
+SELECT Students.name
+FROM Students
+LEFT JOIN Enrollments ON Students.student_id = Enrollments.student_id
+WHERE Enrollments.enrollment_id IS NULL;
+
+ALTER TABLE Enrollments ADD COLUMN grade TEXT;
+UPDATE Enrollments SET grade = 'A' WHERE enrollment_id = 1;
+UPDATE Enrollments SET grade = 'B' WHERE enrollment_id = 2;
+
+SELECT name
+FROM Students
+WHERE student_id IN (
+    SELECT student_id
+    FROM Enrollments
+    JOIN Courses ON Enrollments.course_id = Courses.course_id
+    WHERE Courses.credits = (SELECT MAX(credits) FROM Courses)
+);
+
