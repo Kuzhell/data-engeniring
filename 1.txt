@@ -1,7 +1,6 @@
 import sqlite3
 
 def create_database():
-    # Підключення до бази даних (створить файл, якщо його не існує)
     conn = sqlite3.connect("student_records.db")
     cursor = conn.cursor()
 
